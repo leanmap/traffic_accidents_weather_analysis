@@ -7,14 +7,17 @@ from retry_requests import retry
 from datetime import datetime
 
 #Read metadata context
-with open("../../data/metadata/extract_context.json", "r") as f:
+BASE_DIR = os.getcwd()
+METADATA_DIR = os.path.join(BASE_DIR, "data", "metadata")
+
+with open(f"{METADATA_DIR}/extract_context.json", "r") as f:
     context = json.load(f)
 
 year = context["accidents_year"]
 
 start_date = datetime(year, 1, 1).strftime("%Y-%m-%d")
 end_date = datetime(year, 12, 31).strftime("%Y-%m-%d")
-OUTPUT_DIR = "../../data/raw/"
+OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
 
 # setup the open-meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)

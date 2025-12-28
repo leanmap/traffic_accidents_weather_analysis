@@ -3,28 +3,38 @@ import json
 from datetime import datetime
 import requests
 
-OUTPUT_DIR = "../../data/raw/"
+BASE_DIR = os.getcwd()
+OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
+METADATA_DIR = os.path.join(BASE_DIR, "data", "metadata")
 CURRENT_YEAR = datetime.now().year
 YEARS_TO_TRY = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2]
-METADATA_DIR = "../../data/metadata"
 
 def accidents_for_year(year):
 
     url = "https://opendata-ajuntament.barcelona.cat/data/api/action/datastore_search"
+    limit = 1000  
+    offset = 0
+    all_records = []
+    while True:
+        params = {
+            "resource_id": "8cfddcbe-3403-4a6c-8897-c13238da900e",
+            "filters": json.dumps({"Nk_Any": str(year)}),
+            "limit": limit,
+            "offset": offset
+        }
 
-    params = {
-        "resource_id": "8cfddcbe-3403-4a6c-8897-c13238da900e",
-        "filters": json.dumps({"Nk_Any": str(year)})
-    }
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        records = data["result"]["records"]
 
-    response = requests.get(url, params=params)
-    response.raise_for_status()
+        if not records:
+            break
 
-    data = response.json()
+        all_records.extend(records)
+        offset += limit
 
-    records = data["result"]["records"]
-
-    return records
+    return all_records
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -34,7 +44,7 @@ for year in YEARS_TO_TRY:
 
     if records:
 
-        print(f"F {year}: {len(records)} registros")
+        print(f"For {year}: {len(records)} records")
 
         output_path_acc = os.path.join(
             OUTPUT_DIR, f"accidents_bcn_{year}.json"
