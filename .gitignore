@@ -210,4 +210,8 @@ __marimo__/
 .cache.sqlite
 
 #data
-data/
+data/**
+!data/**/.gitkeep
+
+# notebooks
+notebooks/
